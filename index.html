@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор ТЗ-оферты для 3D моделей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background: #f0f2f5;
+            padding: 15px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #007cba;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: #007cba;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #007cba;
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            font-weight: 600;
+            margin: 12px 0;
+            transition: all 0.3s;
+        }
+        
+        button:active {
+            background: #005a87;
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:active {
+            background: #545b62;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:active {
+            background: #1e7e34;
+        }
+        
+        .offer-view {
+            display: none;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #007cba;
+        }
+        
+        .project-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #007cba;
+            margin-bottom: 8px;
+            font-size: 18px;
+            border-left: 4px solid #007cba;
+            padding-left: 12px;
+        }
+        
+        .criteria-list {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .criteria-list li {
+            margin-bottom: 6px;
+        }
+        
+        .stages-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .stages-table th,
+        .stages-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .stages-table th {
+            background-color: #007cba;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .bank-details {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007cba;
+            font-size: 16px;
+        }
+        
+        .message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div id="formView" class="container">
+        <h1>Генератор ТЗ-оферты для 3D моделей</h1>
+        
+        <div class="form-group">
+            <label>Название проекта:</label>
+            <input type="text" id="project_name" value="3D модель персонажа">
+        </div>
+        
+        <div class="form-group">
+            <label>Общая стоимость (руб.):</label>
+            <input type="number" id="total_cost" value="2500">
+        </div>
+        
+        <div class="form-group">
+            <label>Формат файла:</label>
+            <select id="file_format">
+                <option value=".stl" selected>.stl</option>
+                <option value=".obj">.obj</option>
+                <option value=".fbx">.fbx</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Размер модели:</label>
+            <input type="text" id="model_height" value="150 мм">
+        </div>
+        
+        <div class="form-group">
+            <label>Цель использования:</label>
+            <textarea id="purpose">Для самостоятельной печати. Нужен готовый к печати файл.</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Исходные данные (фото):</label>
+            <textarea id="photos_description">8 фото с разных ракурсов</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Стоимость правок (руб./подход):</label>
+            <input type="number" id="corrections_cost" value="500">
+        </div>
+        
+        <div class="form-group">
+            <label>Время на приемку (часов):</label>
+            <input type="number" id="acceptance_hours" value="48">
+        </div>
+        
+        <div class="form-group">
+            <label>Реквизиты для оплаты:</label>
+            <textarea id="bank_details">Т-банк Константин Сергеевич С. 89777145325</textarea>
+        </div>
+        
+        <button onclick="generateOffer()">Сгенерировать ТЗ-оферту</button>
+    </div>
+
+    <div id="offerView" class="container offer-view">
+        <div class="header">
+            <h1>ТЕХНИЧЕСКОЕ ЗАДАНИЕ (Публичная оферта)</h1>
+            <p id="createdAt"></p>
+        </div>
+
+        <div class="project-info">
+            <strong id="projectNumber"></strong><br>
+            <span id="projectNameDisplay"></span>
+        </div>
+
+        <div class="section">
+            <div class="section-title">1. Предмет договора</div>
+            <p>Создание 3D-модели по фото является арт-интерпретацией (адаптированным переводом 2D в 3D) и может не соответствовать реальной геометрии объекта.</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">2. Цель и назначение модели</div>
+            <p id="purposeDisplay"></p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">3. Исходные данные</div>
+            <p id="photosDescriptionDisplay"></p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">4. Технические требования</div>
+            <p><strong>Формат файла:</strong> <span id="fileFormatDisplay"></span></p>
+            <p><strong>Размер модели:</strong> <span id="modelHeightDisplay"></span></p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">5. Визуальные критерии</div>
+            <p>Критерии для сравнения с исходным фото (допустимы небольшие отклонения):</p>
+            <ul class="criteria-list">
+                <li>Все крупные детали на модели</li>
+                <li>Пропорции расположения деталей</li>
+                <li>Силуэт с основного ракурса сопоставим</li>
+                <li>Мелкая детализация выполнена в произвольной манере</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title">6. Этапы работы и оплата</div>
+            <table class="stages-table">
+                <thead>
+                    <tr>
+                        <th>Этап</th>
+                        <th>Срок</th>
+                        <th>%</th>
+                        <th>Стоимость</th>
+                    </tr>
+                </thead>
+                <tbody id="stagesTableBody">
+                </tbody>
+            </table>
+            <p><em>Правки после принятия этапа оплачиваются дополнительно: <span id="correctionsCostDisplay"></span> руб./подход</em></p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">7. Порядок приемки</div>
+            <p>• Уведомление считается отправленным с момента отправки скриншотов</p>
+            <p>• Время на замечания - <span id="acceptanceHoursDisplay"></span> часов</p>
+            <p>• При отсутствии замечаний работа принимается автоматически</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">8. Акцепт</div>
+            <p>Оплата = принятие условий оферты.</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Реквизиты для оплаты</div>
+            <div class="bank-details" id="bankDetailsDisplay"></div>
+        </div>
+
+        <button class="btn-success" onclick="window.print()">Распечатать ТЗ</button>
+        <button class="btn-secondary" onclick="showForm()">Создать новое ТЗ</button>
+        <button onclick="shareAsText()">Поделиться как текст</button>
+        
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        // Простые функции для работы с датами
+        function addDays(date, days) {
+            var result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        // Основная функция генерации оферты
+        function generateOffer() {
+            try {
+                // Собираем данные
+                var data = {
+                    project_name: document.getElementById('project_name').value,
+                    total_cost: parseInt(document.getElementById('total_cost').value) || 2500,
+                    file_format: document.getElementById('file_format').value,
+                    model_height: document.getElementById('model_height').value,
+                    purpose: document.getElementById('purpose').value,
+                    photos_description: document.getElementById('photos_description').value,
+                    corrections_cost: parseInt(document.getElementById('corrections_cost').value) || 500,
+                    acceptance_hours: parseInt(document.getElementById('acceptance_hours').value) || 48,
+                    bank_details: document.getElementById('bank_details').value
+                };
+
+                // Генерируем номер и дату
+                data.project_number = 'PROJ-' + new Date().getTime();
+                data.created_at = new Date().toLocaleString('ru-RU');
+
+                // Рассчитываем этапы
+                var today = new Date();
+                var stages = [
+                    {
+                        name: 'Утверждение ТЗ',
+                        percent: '20%',
+                        date: formatDate(addDays(today, 1)),
+                        cost: Math.round(data.total_cost * 0.2) + ' руб.'
+                    },
+                    {
+                        name: 'Утверждение 3D-эскиза',
+                        percent: '50%',
+                        date: formatDate(addDays(today, 3)),
+                        cost: Math.round(data.total_cost * 0.5) + ' руб.'
+                    },
+                    {
+                        name: 'Утверждение модели и передача файла',
+                        percent: '100%',
+                        date: formatDate(addDays(today, 5)),
+                        cost: data.total_cost + ' руб.'
+                    }
+                ];
+
+                // Заполняем оферту
+                document.getElementById('projectNumber').textContent = 'Техническое задание № ' + data.project_number;
+                document.getElementById('projectNameDisplay').textContent = 'Проект: ' + data.project_name;
+                document.getElementById('createdAt').textContent = 'Создано: ' + data.created_at;
+                document.getElementById('purposeDisplay').textContent = data.purpose;
+                document.getElementById('photosDescriptionDisplay').textContent = data.photos_description;
+                document.getElementById('fileFormatDisplay').textContent = data.file_format;
+                document.getElementById('modelHeightDisplay').textContent = data.model_height;
+                document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
+                document.getElementById('acceptanceHoursDisplay').textContent = data.acceptance_hours;
+                document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
+
+                // Заполняем таблицу
+                var tableBody = document.getElementById('stagesTableBody');
+                tableBody.innerHTML = '';
+                for (var i = 0; i < stages.length; i++) {
+                    var stage = stages[i];
+                    var row = '<tr><td>' + stage.name + '</td><td>' + stage.date + '</td><td>' + stage.percent + '</td><td>' + stage.cost + '</td></tr>';
+                    tableBody.innerHTML += row;
+                }
+
+                // Сохраняем данные
+                window.currentOfferData = data;
+                window.currentStages = stages;
+
+                // Показываем результат
+                showOffer();
+                showMessage('ТЗ-оферта успешно создана!');
+                
+            } catch (error) {
+                showMessage('Ошибка: ' + error.message, true);
+            }
+        }
+
+        function showOffer() {
+            document.getElementById('formView').style.display = 'none';
+            document.getElementById('offerView').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showForm() {
+            document.getElementById('offerView').style.display = 'none';
+            document.getElementById('formView').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showMessage(text, isError) {
+            var messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.style.display = 'block';
+            
+            if (isError) {
+                messageEl.className = 'message error';
+            } else {
+                messageEl.className = 'message';
+            }
+            
+            setTimeout(function() {
+                messageEl.style.display = 'none';
+            }, 4000);
+        }
+
+        function shareAsText() {
+            try {
+                var data = window.currentOfferData;
+                var stages = window.currentStages;
+                
+                var text = 'ТЕХНИЧЕСКОЕ ЗАДАНИЕ (Публичная оферта)\n\n';
+                text += 'Техническое задание № ' + data.project_number + '\n';
+                text += 'Проект: ' + data.project_name + '\n\n';
+                
+                text += '1. Предмет договора\n';
+                text += 'Создание 3D-модели по фото является арт-интерпретацией (адаптированным переводом 2D в 3D) и может не соответствовать реальной геометрии объекта.\n\n';
+                
+                text += '2. Цель и назначение модели\n';
+                text += data.purpose + '\n\n';
+                
+                text += '3. Исходные данные\n';
+                text += data.photos_description + '\n\n';
+                
+                text += '4. Технические требования\n';
+                text += 'Формат файла: ' + data.file_format + '\n';
+                text += 'Размер модели: ' + data.model_height + '\n\n';
+                
+                text += '5. Визуальные критерии\n';
+                text += 'Критерии для сравнения с исходным фото (допустимы небольшие отклонения):\n';
+                text += '1. Все крупные детали на модели\n';
+                text += '2. Пропорции расположения деталей\n';
+                text += '3. Силуэт с основного ракурса сопоставим\n';
+                text += '4. Мелкая детализация выполнена в произвольной манере\n\n';
+                
+                text += '6. Этапы работы и оплата\n';
+                for (var i = 0; i < stages.length; i++) {
+                    var stage = stages[i];
+                    text += stage.name + ' | ' + stage.date + ' | ' + stage.percent + ' | ' + stage.cost + '\n';
+                }
+                text += '\nПравки после принятия этапа оплачиваются дополнительно: ' + data.corrections_cost + ' руб./подход\n\n';
+                
+                text += '7. Порядок приемки\n';
+                text += '• Уведомление считается отправленным с момента отправки скриншотов\n';
+                text += '• Время на замечания - ' + data.acceptance_hours + ' часов\n';
+                text += '• При отсутствии замечаний работа принимается автоматически\n\n';
+                
+                text += '8. Акцепт\n';
+                text += 'Оплата = принятие условий оферты.\n\n';
+                
+                text += 'Реквизиты для оплаты:\n';
+                text += data.bank_details + '\n\n';
+                
+                text += 'Создано: ' + data.created_at;
+
+                // Пытаемся скопировать
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showMessage('Текст скопирован в буфер обмена!');
+                    }).catch(function() {
+                        showTextForCopy(text);
+                    });
+                } else {
+                    showTextForCopy(text);
+                }
+                
+            } catch (error) {
+                showMessage('Ошибка: ' + error.message, true);
+            }
+        }
+
+        function showTextForCopy(text) {
+            var textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showMessage('Текст скопирован в буфер обмена!');
+            } catch (err) {
+                prompt('Скопируйте этот текст:', text);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
