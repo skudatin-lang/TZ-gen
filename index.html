@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор ТЗ-оферты для 3D моделей</title>
+    <title>Генератор ТЗ и Договора-оферты для 3D моделей</title>
     <style>
         * {
             margin: 0;
@@ -112,21 +112,15 @@
             border-bottom: 2px solid #007cba;
         }
         
-        .project-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .document-section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
         }
         
-        .section {
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
+        .document-title {
             font-weight: 600;
             color: #007cba;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
             font-size: 18px;
             border-left: 4px solid #007cba;
             padding-left: 12px;
@@ -232,11 +226,39 @@
             color: #666;
             margin-top: 5px;
         }
+        
+        .contract-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .contract-info {
+            margin-bottom: 15px;
+        }
+        
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature {
+            width: 45%;
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="formView" class="container">
-        <h1>Генератор ТЗ-оферты для 3D моделей</h1>
+        <h1>Генератор ТЗ и Договора-оферты для 3D моделей</h1>
         
         <div class="form-group">
             <label>Название проекта:</label>
@@ -244,42 +266,18 @@
         </div>
         
         <div class="form-group">
-            <label>Общая стоимость моделирования (руб.):</label>
-            <input type="number" id="total_cost" value="2500">
+            <label>Общая стоимость Заказа (руб.):</label>
+            <input type="number" id="total_cost" value="8000">
         </div>
         
         <div class="form-group">
-            <label>Формат файла:</label>
-            <select id="file_format">
-                <option value=".stl" selected>.stl</option>
-                <option value=".obj">.obj</option>
-                <option value=".fbx">.fbx</option>
-            </select>
+            <label>Цель создания модели:</label>
+            <textarea id="purpose">Создание 3D-модели для последующей 3D-печати и коллекционирования.</textarea>
         </div>
         
         <div class="form-group">
-            <label>Размер модели:</label>
-            <input type="text" id="model_height" value="150 мм">
-        </div>
-        
-        <div class="form-group">
-            <label>Цель использования:</label>
-            <textarea id="purpose">Для самостоятельной печати. Нужен готовый к печати файл.</textarea>
-        </div>
-        
-        <div class="form-group">
-            <label>Исходные данные (фото):</label>
-            <textarea id="photos_description">8 фото с разных ракурсов</textarea>
-        </div>
-        
-        <div class="form-group">
-            <label>Стоимость правок (руб./подход):</label>
-            <input type="number" id="corrections_cost" value="500">
-        </div>
-        
-        <div class="form-group">
-            <label>Время на приемку (часов):</label>
-            <input type="number" id="acceptance_hours" value="48">
+            <label>Исходные данные (референсные материалы):</label>
+            <textarea id="photos_description">Фотографии, эскизы, предоставленные Заказчиком</textarea>
         </div>
         
         <div class="optional-section">
@@ -296,7 +294,7 @@
             </div>
             
             <div class="form-group">
-                <label>Дата утверждения модели и передачи файла:</label>
+                <label>Дата передачи файла STL:</label>
                 <input type="text" id="stage3_date" placeholder="ДД.ММ.ГГГГ" value="18.11.2025">
             </div>
         </div>
@@ -306,7 +304,7 @@
             
             <div class="checkbox-group">
                 <input type="checkbox" id="include_printing" onchange="togglePrintingFields()">
-                <label for="include_printing">Включить услугу печати</label>
+                <label for="include_printing">Включить услугу 3D-печати</label>
             </div>
             
             <div id="printing_fields" class="optional-fields">
@@ -339,105 +337,139 @@
             </div>
         </div>
         
-        <div class="form-group">
-            <label>Реквизиты для оплаты:</label>
-            <textarea id="bank_details">Т-банк Константин Сергеевич С. 89777145325</textarea>
-        </div>
-        
-        <button onclick="generateOffer()">Сгенерировать ТЗ-оферту</button>
+        <button onclick="generateOffer()">Сгенерировать документы</button>
     </div>
 
     <div id="offerView" class="container offer-view">
         <div class="header">
-            <h1>ТЕХНИЧЕСКОЕ ЗАДАНИЕ (персональная оферта)</h1>
+            <h1>ТЕХНИЧЕСКОЕ ЗАДАНИЕ (ТЗ)<br>к Договору на создание 3D-модели</h1>
             <p id="createdAt"></p>
         </div>
 
-        <div class="project-info">
-            <strong id="projectNumber"></strong><br>
-            <span id="projectNameDisplay"></span>
-        </div>
-
-        <div class="section">
-            <div class="section-title">1. Предмет договора</div>
-            <p>Создание 3D-модели по фото - является арт-интерпретацией (адаптированным переводом 2D в 3D) и может не соответствовать реальной геометрии объекта.</p>
-        </div>
-
-        <div class="section">
-            <div class="section-title">2. Цель и назначение модели</div>
+        <div class="document-section">
+            <div class="document-title">1. Цель и назначение модели</div>
             <p id="purposeDisplay"></p>
         </div>
 
-        <div class="section">
-            <div class="section-title">3. Исходные данные</div>
+        <div class="document-section">
+            <div class="document-title">2. Исходные данные</div>
+            <p>· Референсные материалы (фотографии, эскизы), предоставленные Заказчиком.</p>
+            <p>· Дополнительные пожелания и комментарии Заказчиком, указанные в ходе обсуждения.</p>
             <p id="photosDescriptionDisplay"></p>
         </div>
 
-        <div class="section">
-            <div class="section-title">4. Технические требования</div>
-            <p><strong>Формат файла:</strong> <span id="fileFormatDisplay"></span></p>
-            <p><strong>Размер модели:</strong> <span id="modelHeightDisplay"></span></p>
+        <div class="document-section">
+            <div class="document-title">3. Технические требования к модели</div>
+            <p>· Итоговый файл предоставляется в формате STL, готовом к 3D-печати.</p>
+            <p>· Модель оптимизирована для процесса FDM/SLA печати (удаление невидимых полигонов, обеспечение целостности сетки).</p>
+            <p>· Важное условие: Создание 3D-модели по фото является адаптацией и интерпретацией 2D-изображения в трехмерное пространство, а не созданием его точной фотометрической копии. Восприятие объема, пропорций и деталей может отличаться от исходного плоского изображения в силу технических особенностей процесса.</p>
         </div>
 
-        <div class="section">
-            <div class="section-title">5. Критерии приемки работы</div>
-            <p>Критерии для сравнения с исходным фото (допустимы небольшие отклонения):</p>
+        <div class="document-section">
+            <div class="document-title">4. Визуальные критерии (Критерии оценки)</div>
+            <p>Результат считается соответствующим ТЗ при совпадении по следующим объективным параметрам (допускаются незначительные отклонения, обусловленные переводом из 2D в 3D):</p>
             <ul class="criteria-list">
-                <li>Все крупные детали на модели зафиксированные в ТЗ на приложенных скринах.</li>
-                <li>Пропорции расположения деталей</li>
-                <li>Силуэт с основного ракурса сопоставим с исходным изображением.</li>
-                <li>Мелкая детализация выполняется в свободной манере исполнения и расположении элементов при условии, что их тип и общий характер соответствуют исходным изображением.</li>
+                <li><strong>Силуэт:</strong> Общий контур и пропорции модели соответствуют референсу. Допускаются незначительные отклонения, связанные с интерпретацией перспективы и объема.</li>
+                <li><strong>Крупные детали:</strong> Расположение и общая форма основных элементов (одежда, снаряжение, черты лица, прическа) соответствуют референсу.</li>
+                <li><strong>Поза:</strong> Ракурс и положение тела/объекта соответствуют референсу.</li>
+                <li><strong>Композиция:</strong> Расположение элементов модели в пространстве соответствует референсу.</li>
             </ul>
+            <p>Мелкая детализация (текстуры, складки, узоры) выполняется на усмотрение Исполнителя в рамках общего стиля и не является отдельным критерием приемки.</p>
         </div>
 
-        <div class="section">
-            <div class="section-title">6. Этапы работы и оплата в % от общей суммы</div>
+        <div class="document-section">
+            <div class="document-title">5. Порядок приемки работы (Процедура предоставления обратной связи)</div>
+            <p>· Результаты каждого этапа работы направляются Заказчику для ознакомления.</p>
+            <p>· При наличии замечаний, Заказчик обязуется предоставить обратную связь в виде скриншотов с четкими графическими пометками (стрелки, кружки), поясняющими характер правки.</p>
+            <p>· Текстовые описания правок без визуальных пометок к рассмотрению не принимаются.</p>
+        </div>
+
+        <div style="page-break-before: always;"></div>
+
+        <div class="contract-header">
+            <h1>ДОГОВОР-ОФЕРТА<br>на оказание услуг по созданию 3D-модели</h1>
+            <p>г. Москва «<span id="contractDay">12</span>» <span id="contractMonth">ноября</span> 2025 г.</p>
+        </div>
+
+        <div class="contract-info">
+            <p>Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем 100% предоплаты в течение 3 (трех) рабочих дней с момента ее получения. По истечении данного срока условия (сроки и стоимость) подлежат повторному согласованию.</p>
+        </div>
+
+        <div class="document-section">
+            <div class="document-title">1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ</div>
+            <p>Исполнитель обязуется создать 3D-модель в соответствии с Техническим заданием (ТЗ), а Заказчик — принять и оплатить работу.</p>
+        </div>
+
+        <div class="document-section">
+            <div class="document-title">2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ</div>
+            <p>Общая стоимость Заказа составляет <span id="totalCostDisplay" style="font-weight: bold;"></span> рублей.</p>
+            
             <table class="stages-table">
                 <thead>
                     <tr>
-                        <th>Этап</th>
-                        <th>Срок</th>
-                        <th>%</th>
-                        <th>Стоимость</th>
+                        <th>№</th>
+                        <th>Наименование этапа</th>
+                        <th>Срок исполнения*</th>
+                        <th>Стоимость этапа</th>
+                        <th>Условие подтверждения/оплаты</th>
                     </tr>
                 </thead>
                 <tbody id="stagesTableBody">
                 </tbody>
             </table>
-            
-            <div id="additionalStagesTable"></div>
-            
-            <p><em>Правки после принятия этапа оплачиваются дополнительно: <span id="correctionsCostDisplay"></span> руб./подход</em></p>
+            <p><em>*Сроки могут быть скорректированы по согласованию Сторон.</em></p>
         </div>
 
-        <div class="section">
-            <div class="section-title">7. Порядок приемки</div>
-            <p>• Уведомление считается отправленным с момента отправки скриншотов</p>
-            <p>• Время на замечания - <span id="acceptanceHoursDisplay"></span> часов</p>
-            <p>• При отсутствии замечаний в указанный срок работа считается принятой и дальнейшие комментарии относительно готовой модели считаются не существенными</p>
+        <div class="document-section">
+            <div class="document-title">3. ПОРЯДОК ОПЛАТЫ</div>
+            <p id="paymentConditions"></p>
+            <div class="bank-details">
+                <p><strong>Реквизиты для оплаты:</strong></p>
+                <p>· Перевод по СБП на номер: 89777145325</p>
+                <p>· Банк: Т-Банк</p>
+                <p>· Получатель: Константин Сергеевич С.</p>
+                <p>· Подтверждением оплаты является чек.</p>
+            </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">8. Акцепт</div>
-            <p>Оплата является подтверждением заказа, а также полным и безоговорочным принятием условий данной оферты.</p>
+        <div class="document-section">
+            <div class="document-title">4. ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ</div>
+            <p>Услуги 3D-печати и покраски являются отдельными, не зависящими от создания модели, и отражаются в ТЗ как самостоятельные этапы с отдельной 100% предоплатой. В связи с заказом физических материалов и привлечением сторонних исполнителей, отказ от данных услуг после их оплаты невозможен, возврат средств не производится.</p>
+            <div id="additionalServicesTable"></div>
         </div>
 
-        <div class="section">
-            <div class="section-title">Реквизиты для оплаты</div>
-            <div class="bank-details" id="bankDetailsDisplay"></div>
+        <div class="document-section">
+            <div class="document-title">5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ</div>
+            <p>1. Оплата Заказа означает полное и безоговорочное принятие Заказчиком всех условий настоящего Договора-оферты и прилагаемого ТЗ.</p>
+            <p>2. Все правки к этапам, ранее принятым Заказчиком (в соответствии с п.2), оплачиваются дополнительно по отдельному соглашению.</p>
+            <p>3. Все споры Стороны решают путем переговоров, а при недостижении согласия — в суде по месту нахождения Исполнителя.</p>
         </div>
 
-        <div class="link-section">
-            <div class="section-title">Ссылка для передачи оферты</div>
+        <div class="signature-section">
+            <div class="signature">
+                <p>_________________________</p>
+                <p>Константин Сергеевич С.</p>
+                <p>Исполнитель</p>
+            </div>
+            <div class="signature">
+                <p>_________________________</p>
+                <p>Заказчик</p>
+            </div>
+        </div>
+
+        <div class="link-section no-print">
+            <div class="document-title">Ссылка для передачи документов</div>
             <p>Отправьте эту ссылку клиенту. Ссылка будет активна в течение 30 дней.</p>
             <div class="link-box" id="offerLink"></div>
             <div class="expiry-info" id="expiryInfo"></div>
             <button onclick="copyOfferLink()">Скопировать ссылку</button>
         </div>
 
-        <button class="btn-success" onclick="window.print()">Распечатать ТЗ</button>
-        <button class="btn-secondary" onclick="showForm()">Создать новое ТЗ</button>
-        <button onclick="shareAsText()">Поделиться как текст</button>
+        <div class="no-print">
+            <button class="btn-success" onclick="window.print()">Распечатать документы</button>
+            <button class="btn-secondary" onclick="showForm()">Создать новые документы</button>
+            <button onclick="shareAsText()">Поделиться как текст</button>
+        </div>
         
         <div class="message" id="message"></div>
     </div>
@@ -477,20 +509,24 @@
             return date.toLocaleDateString('ru-RU');
         }
 
-        // Основная функция генерации оферты
+        // Функция для получения названия месяца
+        function getMonthName(month) {
+            var months = [
+                'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+            ];
+            return months[month];
+        }
+
+        // Основная функция генерации документов
         function generateOffer() {
             try {
                 // Собираем данные
                 var data = {
                     project_name: document.getElementById('project_name').value,
-                    total_cost: parseInt(document.getElementById('total_cost').value) || 2500,
-                    file_format: document.getElementById('file_format').value,
-                    model_height: document.getElementById('model_height').value,
+                    total_cost: parseInt(document.getElementById('total_cost').value) || 8000,
                     purpose: document.getElementById('purpose').value,
                     photos_description: document.getElementById('photos_description').value,
-                    corrections_cost: parseInt(document.getElementById('corrections_cost').value) || 500,
-                    acceptance_hours: parseInt(document.getElementById('acceptance_hours').value) || 48,
-                    bank_details: document.getElementById('bank_details').value,
                     // Сроки этапов
                     stage1_date: document.getElementById('stage1_date').value,
                     stage2_date: document.getElementById('stage2_date').value,
@@ -507,29 +543,38 @@
                     version: '1.0'
                 };
 
-                // Генерируем номер
+                // Генерируем номер и дату
                 data.project_number = 'PROJ-' + new Date().getTime();
                 data.created_at_display = new Date().toLocaleString('ru-RU');
+                
+                // Устанавливаем дату для договора
+                var now = new Date();
+                document.getElementById('contractDay').textContent = now.getDate();
+                document.getElementById('contractMonth').textContent = getMonthName(now.getMonth());
 
                 // Рассчитываем основные этапы
+                var stage1_cost = Math.round(data.total_cost * 0.2);
+                var stage2_cost = Math.round(data.total_cost * 0.3);
+                var stage3_cost = data.total_cost - stage1_cost - stage2_cost; // Оставшиеся 50%
+                
                 var stages = [
                     {
                         name: 'Утверждение ТЗ',
-                        percent: '20%',
                         date: data.stage1_date,
-                        cost: Math.round(data.total_cost * 0.2) + ' руб.'
+                        cost: stage1_cost + ' руб.',
+                        condition: 'Внесение предоплаты.'
                     },
                     {
                         name: 'Утверждение 3D-эскиза',
-                        percent: '50%',
                         date: data.stage2_date,
-                        cost: Math.round(data.total_cost * 0.5) + ' руб.'
+                        cost: stage2_cost + ' руб.',
+                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой. Очередной платеж подлежит уплате в течение 48 часов с момента принятия этапа.'
                     },
                     {
-                        name: 'Утверждение модели и передача файла',
-                        percent: '100%',
+                        name: 'Передача файла STL',
                         date: data.stage3_date,
-                        cost: data.total_cost + ' руб.'
+                        cost: stage3_cost + ' руб.',
+                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой, Заказчик обязан произвести итоговый платеж (если применимо) в течение 48 часов.'
                     }
                 ];
 
@@ -537,52 +582,63 @@
                 var additionalStages = [];
                 if (data.include_printing) {
                     additionalStages.push({
-                        name: 'Печать',
-                        percent: '-',
+                        name: '3D-печать',
                         date: data.printing_date,
-                        cost: data.printing_cost + ' руб.'
+                        cost: data.printing_cost + ' руб.',
+                        condition: '100% предоплата. Отказ от услуги после оплаты невозможен.'
                     });
                 }
                 
                 if (data.include_painting) {
                     additionalStages.push({
                         name: 'Покраска',
-                        percent: '-',
                         date: data.painting_date,
-                        cost: data.painting_cost + ' руб.'
+                        cost: data.painting_cost + ' руб.',
+                        condition: '100% предоплата. Отказ от услуги после оплаты невозможен.'
                     });
                 }
 
-                // Заполняем оферту
+                // Заполняем документы
                 document.getElementById('projectNumber').textContent = 'Техническое задание № ' + data.project_number;
                 document.getElementById('projectNameDisplay').textContent = 'Проект: ' + data.project_name;
                 document.getElementById('createdAt').textContent = 'Создано: ' + data.created_at_display;
                 document.getElementById('purposeDisplay').textContent = data.purpose;
                 document.getElementById('photosDescriptionDisplay').textContent = data.photos_description;
-                document.getElementById('fileFormatDisplay').textContent = data.file_format;
-                document.getElementById('modelHeightDisplay').textContent = data.model_height;
-                document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
-                document.getElementById('acceptanceHoursDisplay').textContent = data.acceptance_hours;
-                document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
+                document.getElementById('totalCostDisplay').textContent = data.total_cost;
+
+                // Определяем условия оплаты
+                var paymentConditions = '';
+                if (data.total_cost <= 10000) {
+                    paymentConditions = '1. При общей стоимости Заказа до 10 000 ₽ — 100% предоплата.';
+                } else {
+                    paymentConditions = '1. При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3.';
+                }
+                document.getElementById('paymentConditions').textContent = paymentConditions;
 
                 // Заполняем таблицу основных этапов
                 var tableBody = document.getElementById('stagesTableBody');
                 tableBody.innerHTML = '';
                 for (var i = 0; i < stages.length; i++) {
                     var stage = stages[i];
-                    var row = '<tr><td>' + stage.name + '</td><td>' + stage.date + '</td><td>' + stage.percent + '</td><td>' + stage.cost + '</td></tr>';
+                    var row = '<tr>' +
+                        '<td>' + (i+1) + '</td>' +
+                        '<td>' + stage.name + '</td>' +
+                        '<td>' + stage.date + '</td>' +
+                        '<td>' + stage.cost + '</td>' +
+                        '<td>' + stage.condition + '</td>' +
+                        '</tr>';
                     tableBody.innerHTML += row;
                 }
 
                 // Заполняем таблицу дополнительных этапов
-                var additionalTable = document.getElementById('additionalStagesTable');
+                var additionalTable = document.getElementById('additionalServicesTable');
                 additionalTable.innerHTML = '';
                 
                 if (additionalStages.length > 0) {
-                    var additionalHTML = '<table class="stages-table"><tbody>';
+                    var additionalHTML = '<p><strong>Дополнительные услуги:</strong></p><table class="stages-table"><thead><tr><th>Наименование услуги</th><th>Срок исполнения</th><th>Стоимость</th><th>Условия</th></tr></thead><tbody>';
                     for (var j = 0; j < additionalStages.length; j++) {
                         var additionalStage = additionalStages[j];
-                        additionalHTML += '<tr><td>' + additionalStage.name + '</td><td>' + additionalStage.date + '</td><td>' + additionalStage.percent + '</td><td>' + additionalStage.cost + '</td></tr>';
+                        additionalHTML += '<tr><td>' + additionalStage.name + '</td><td>' + additionalStage.date + '</td><td>' + additionalStage.cost + '</td><td>' + additionalStage.condition + '</td></tr>';
                     }
                     additionalHTML += '</tbody></table>';
                     additionalTable.innerHTML = additionalHTML;
@@ -609,7 +665,7 @@
 
                 // Показываем результат
                 showOffer();
-                showMessage('ТЗ-оферта успешно создана!');
+                showMessage('Документы успешно созданы!');
                 
             } catch (error) {
                 showMessage('Ошибка: ' + error.message, true);
@@ -627,7 +683,7 @@
             }
         }
 
-        // Функция для загрузки оферты из URL параметров
+        // Функция для загрузки документов из URL параметров
         function loadOfferFromURL() {
             var urlParams = new URLSearchParams(window.location.search);
             var offerParam = urlParams.get('offer');
@@ -638,41 +694,55 @@
                     
                     // Проверяем срок действия
                     if (isLinkExpired(data.created_at)) {
-                        showMessage('Ссылка устарела! Создайте новую ТЗ-оферту.', true);
+                        showMessage('Ссылка устарела! Создайте новые документы.', true);
                         return;
                     }
                     
-                    // Заполняем оферту данными из URL
+                    // Устанавливаем дату для договора
+                    var createdDate = new Date(data.created_at);
+                    document.getElementById('contractDay').textContent = createdDate.getDate();
+                    document.getElementById('contractMonth').textContent = getMonthName(createdDate.getMonth());
+                    
+                    // Заполняем документы данными из URL
                     document.getElementById('projectNumber').textContent = 'Техническое задание № ' + data.project_number;
                     document.getElementById('projectNameDisplay').textContent = 'Проект: ' + data.project_name;
                     document.getElementById('createdAt').textContent = 'Создано: ' + data.created_at_display;
                     document.getElementById('purposeDisplay').textContent = data.purpose;
                     document.getElementById('photosDescriptionDisplay').textContent = data.photos_description;
-                    document.getElementById('fileFormatDisplay').textContent = data.file_format;
-                    document.getElementById('modelHeightDisplay').textContent = data.model_height;
-                    document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
-                    document.getElementById('acceptanceHoursDisplay').textContent = data.acceptance_hours;
-                    document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
+                    document.getElementById('totalCostDisplay').textContent = data.total_cost;
+
+                    // Определяем условия оплаты
+                    var paymentConditions = '';
+                    if (data.total_cost <= 10000) {
+                        paymentConditions = '1. При общей стоимости Заказа до 10 000 ₽ — 100% предоплата.';
+                    } else {
+                        paymentConditions = '1. При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3.';
+                    }
+                    document.getElementById('paymentConditions').textContent = paymentConditions;
 
                     // Рассчитываем этапы
+                    var stage1_cost = Math.round(data.total_cost * 0.2);
+                    var stage2_cost = Math.round(data.total_cost * 0.3);
+                    var stage3_cost = data.total_cost - stage1_cost - stage2_cost; // Оставшиеся 50%
+                    
                     var stages = [
                         {
                             name: 'Утверждение ТЗ',
-                            percent: '20%',
                             date: data.stage1_date,
-                            cost: Math.round(data.total_cost * 0.2) + ' руб.'
+                            cost: stage1_cost + ' руб.',
+                            condition: 'Внесение предоплаты.'
                         },
                         {
                             name: 'Утверждение 3D-эскиза',
-                            percent: '50%',
                             date: data.stage2_date,
-                            cost: Math.round(data.total_cost * 0.5) + ' руб.'
+                            cost: stage2_cost + ' руб.',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой. Очередной платеж подлежит уплате в течение 48 часов с момента принятия этапа.'
                         },
                         {
-                            name: 'Утверждение модели и передача файла',
-                            percent: '100%',
+                            name: 'Передача файла STL',
                             date: data.stage3_date,
-                            cost: data.total_cost + ' руб.'
+                            cost: stage3_cost + ' руб.',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой, Заказчик обязан произвести итоговый платеж (если применимо) в течение 48 часов.'
                         }
                     ];
 
@@ -681,37 +751,46 @@
                     tableBody.innerHTML = '';
                     for (var i = 0; i < stages.length; i++) {
                         var stage = stages[i];
-                        var row = '<tr><td>' + stage.name + '</td><td>' + stage.date + '</td><td>' + stage.percent + '</td><td>' + stage.cost + '</td></tr>';
+                        var row = '<tr>' +
+                            '<td>' + (i+1) + '</td>' +
+                            '<td>' + stage.name + '</td>' +
+                            '<td>' + stage.date + '</td>' +
+                            '<td>' + stage.cost + '</td>' +
+                            '<td>' + stage.condition + '</td>' +
+                            '</tr>';
                         tableBody.innerHTML += row;
                     }
 
                     // Дополнительные этапы
-                    var additionalTable = document.getElementById('additionalStagesTable');
+                    var additionalTable = document.getElementById('additionalServicesTable');
                     additionalTable.innerHTML = '';
                     
                     if (data.include_printing) {
-                        var printingHTML = '<table class="stages-table"><tbody>';
-                        printingHTML += '<tr><td>Печать</td><td>' + data.printing_date + '</td><td>-</td><td>' + data.printing_cost + ' руб.</td></tr>';
+                        var printingHTML = '<p><strong>Дополнительные услуги:</strong></p><table class="stages-table"><thead><tr><th>Наименование услуги</th><th>Срок исполнения</th><th>Стоимость</th><th>Условия</th></tr></thead><tbody>';
+                        printingHTML += '<tr><td>3D-печать</td><td>' + data.printing_date + '</td><td>' + data.printing_cost + ' руб.</td><td>100% предоплата. Отказ от услуги после оплаты невозможен.</td></tr>';
+                        
+                        if (data.include_painting) {
+                            printingHTML += '<tr><td>Покраска</td><td>' + data.painting_date + '</td><td>' + data.painting_cost + ' руб.</td><td>100% предоплата. Отказ от услуги после оплаты невозможен.</td></tr>';
+                        }
+                        
                         printingHTML += '</tbody></table>';
-                        additionalTable.innerHTML += printingHTML;
-                    }
-                    
-                    if (data.include_painting) {
-                        var paintingHTML = '<table class="stages-table"><tbody>';
-                        paintingHTML += '<tr><td>Покраска</td><td>' + data.painting_date + '</td><td>-</td><td>' + data.painting_cost + ' руб.</td></tr>';
+                        additionalTable.innerHTML = printingHTML;
+                    } else if (data.include_painting) {
+                        var paintingHTML = '<p><strong>Дополнительные услуги:</strong></p><table class="stages-table"><thead><tr><th>Наименование услуги</th><th>Срок исполнения</th><th>Стоимость</th><th>Условия</th></tr></thead><tbody>';
+                        paintingHTML += '<tr><td>Покраска</td><td>' + data.painting_date + '</td><td>' + data.painting_cost + ' руб.</td><td>100% предоплата. Отказ от услуги после оплаты невозможен.</td></tr>';
                         paintingHTML += '</tbody></table>';
-                        additionalTable.innerHTML += paintingHTML;
+                        additionalTable.innerHTML = paintingHTML;
                     }
 
                     // Скрываем секцию с ссылкой при просмотре по ссылке
                     document.querySelector('.link-section').style.display = 'none';
                     
-                    // Показываем оферту
+                    // Показываем документы
                     showOffer();
                     
                 } catch (error) {
-                    console.error('Ошибка загрузки оферты:', error);
-                    showMessage('Не удалось загрузить оферту по ссылке', true);
+                    console.error('Ошибка загрузки документов:', error);
+                    showMessage('Не удалось загрузить документы по ссылке', true);
                 }
             }
         }
@@ -756,55 +835,86 @@
                 var stages = window.currentStages;
                 var additionalStages = window.additionalStages;
                 
-                var text = 'ТЕХНИЧЕСКОЕ ЗАДАНИЕ (персональная оферта)\n\n';
-                text += 'Техническое задание № ' + data.project_number + '\n';
-                text += 'Проект: ' + data.project_name + '\n\n';
+                var text = 'ТЕХНИЧЕСКОЕ ЗАДАНИЕ (ТЗ)\nк Договору на создание 3D-модели\n\n';
                 
-                text += '1. Предмет договора\n';
-                text += 'Создание 3D-модели по фото - является арт-интерпретацией (адаптированным переводом 2D в 3D) и может не соответствовать реальной геометрии объекта.\n\n';
-                
-                text += '2. Цель и назначение модели\n';
+                text += '1. Цель и назначение модели\n';
                 text += data.purpose + '\n\n';
                 
-                text += '3. Исходные данные\n';
-                text += data.photos_description + '\n\n';
+                text += '2. Исходные данные\n';
+                text += '· Референсные материалы (фотографии, эскизы), предоставленные Заказчиком.\n';
+                text += '· Дополнительные пожелания и комментарии Заказчиком, указанные в ходе обсуждения.\n\n';
                 
-                text += '4. Технические требования\n';
-                text += 'Формат файла: ' + data.file_format + '\n';
-                text += 'Размер модели: ' + data.model_height + '\n\n';
+                text += '3. Технические требования к модели\n';
+                text += '· Итоговый файл предоставляется в формате STL, готовом к 3D-печати.\n';
+                text += '· Модель оптимизирована для процесса FDM/SLA печати (удаление невидимых полигонов, обеспечение целостности сетки).\n';
+                text += '· Важное условие: Создание 3D-модели по фото является адаптацией и интерпретацией 2D-изображения в трехмерное пространство, а не созданием его точной фотометрической копии. Восприятие объема, пропорций и деталей может отличаться от исходного плоского изображения в силу технических особенностей процесса.\n\n';
                 
-                text += '5. Критерии приемки работы\n';
-                text += 'Критерии для сравнения с исходным фото (допустимы небольшие отклонения):\n';
-                text += '1. Все крупные детали на модели зафиксированные в ТЗ на приложенных скринах.\n';
-                text += '2. Пропорции расположения деталей\n';
-                text += '3. Силуэт с основного ракурса сопоставим с исходным изображением.\n';
-                text += '4. Мелкая детализация выполняется в свободной манере исполнения и расположении элементов при условии, что их тип и общий характер соответствуют исходным изображением.\n\n';
+                text += '4. Визуальные критерии (Критерии оценки)\n';
+                text += 'Результат считается соответствующим ТЗ при совпадении по следующим объективным параметрам (допускаются незначительные отклонения, обусловленные переводом из 2D в 3D):\n';
+                text += '1. Силуэт: Общий контур и пропорции модели соответствуют референсу. Допускаются незначительные отклонения, связанные с интерпретацией перспективы и объема.\n';
+                text += '2. Крупные детали: Расположение и общая форма основных элементов (одежда, снаряжение, черты лица, прическа) соответствуют референсу.\n';
+                text += '3. Поза: Ракурс и положение тела/объекта соответствуют референсу.\n';
+                text += '4. Композиция: Расположение элементов модели в пространстве соответствует референсу.\n\n';
+                text += 'Мелкая детализация (текстуры, складки, узоры) выполняется на усмотрение Исполнителя в рамках общего стиля и не является отдельным критерием приемки.\n\n';
                 
-                text += '6. Этапы работы и оплата в % от общей суммы\n';
+                text += '5. Порядок приемки работы (Процедура предоставления обратной связи)\n';
+                text += '· Результаты каждого этапа работы направляются Заказчику для ознакомления.\n';
+                text += '· При наличии замечаний, Заказчик обязуется предоставить обратную связь в виде скриншотов с четкими графическими пометками (стрелки, кружки), поясняющими характер правки.\n';
+                text += '· Текстовые описания правок без визуальных пометок к рассмотрению не принимаются.\n\n';
+                
+                text += '---\n\n';
+                
+                text += 'ДОГОВОР-ОФЕРТА\nна оказание услуг по созданию 3D-модели\n\n';
+                
+                text += 'г. Москва «' + document.getElementById('contractDay').textContent + '» ' + document.getElementById('contractMonth').textContent + ' 2025 г.\n\n';
+                
+                text += 'Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем 100% предоплаты в течение 3 (трех) рабочих дней с момента ее получения. По истечении данного срока условия (сроки и стоимость) подлежат повторному согласованию.\n\n';
+                
+                text += '1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ\n';
+                text += 'Исполнитель обязуется создать 3D-модель в соответствии с Техническим заданием (ТЗ), а Заказчик — принять и оплатить работу.\n\n';
+                
+                text += '2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ\n';
+                text += 'Общая стоимость Заказа составляет ' + data.total_cost + ' рублей.\n\n';
+                
+                text += 'Этапы работы:\n';
                 for (var i = 0; i < stages.length; i++) {
                     var stage = stages[i];
-                    text += stage.name + ' | ' + stage.date + ' | ' + stage.percent + ' | ' + stage.cost + '\n';
+                    text += (i+1) + '. ' + stage.name + ' | ' + stage.date + ' | ' + stage.cost + ' | ' + stage.condition + '\n';
                 }
                 
                 if (additionalStages.length > 0) {
+                    text += '\nДополнительные услуги:\n';
                     for (var j = 0; j < additionalStages.length; j++) {
                         var additionalStage = additionalStages[j];
-                        text += additionalStage.name + ' | ' + additionalStage.date + ' | ' + additionalStage.percent + ' | ' + additionalStage.cost + '\n';
+                        text += additionalStage.name + ' | ' + additionalStage.date + ' | ' + additionalStage.cost + ' | ' + additionalStage.condition + '\n';
                     }
                 }
                 
-                text += '\nПравки после принятия этапа оплачиваются дополнительно: ' + data.corrections_cost + ' руб./подход\n\n';
+                text += '\n*Сроки могут быть скорректированы по согласованию Сторон.\n\n';
                 
-                text += '7. Порядок приемки\n';
-                text += '• Уведомление считается отправленным с момента отправки скриншотов\n';
-                text += '• Время на замечания - ' + data.acceptance_hours + ' часов\n';
-                text += '• При отсутствии замечаний в указанный срок работа считается принятой и дальнейшие комментарии относительно готовой модели считаются не существенными\n\n';
-                
-                text += '8. Акцепт\n';
-                text += 'Оплата является подтверждением заказа, а также полным и безоговорочным принятием условий данной оферты.\n\n';
-                
+                text += '3. ПОРЯДОК ОПЛАТЫ\n';
+                if (data.total_cost <= 10000) {
+                    text += '1. При общей стоимости Заказа до 10 000 ₽ — 100% предоплата.\n';
+                } else {
+                    text += '1. При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3.\n';
+                }
                 text += 'Реквизиты для оплаты:\n';
-                text += data.bank_details + '\n\n';
+                text += '· Перевод по СБП на номер: 89777145325\n';
+                text += '· Банк: Т-Банк\n';
+                text += '· Получатель: Константин Сергеевич С.\n';
+                text += '· Подтверждением оплаты является чек.\n\n';
+                
+                text += '4. ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ\n';
+                text += 'Услуги 3D-печати и покраски являются отдельными, не зависящими от создания модели, и отражаются в ТЗ как самостоятельные этапы с отдельной 100% предоплатой. В связи с заказом физических материалов и привлечением сторонних исполнителей, отказ от данных услуг после их оплаты невозможен, возврат средств не производится.\n\n';
+                
+                text += '5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ\n';
+                text += '1. Оплата Заказа означает полное и безоговорочное принятие Заказчиком всех условий настоящего Договора-оферты и прилагаемого ТЗ.\n';
+                text += '2. Все правки к этапам, ранее принятым Заказчиком (в соответствии с п.2), оплачиваются дополнительно по отдельному соглашению.\n';
+                text += '3. Все споры Стороны решают путем переговоров, а при недостижении согласия — в суде по месту нахождения Исполнителя.\n\n';
+                
+                text += '---\n\n';
+                
+                text += 'Исполнитель:\nКонстантин Сергеевич С.\n\n';
                 
                 text += 'Создано: ' + data.created_at_display;
 
@@ -846,10 +956,10 @@
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Пытаемся загрузить оферту из URL параметров
+            // Пытаемся загрузить документы из URL параметров
             loadOfferFromURL();
             
-            // Если оферта не загружена из URL, показываем форму
+            // Если документы не загружены из URL, показываем форму
             if (document.getElementById('formView').style.display !== 'none') {
                 showForm();
             }
