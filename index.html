@@ -229,6 +229,29 @@
         .duration-select select {
             flex: 1;
         }
+        
+        .cost-breakdown {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .cost-total {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #007cba;
+        }
     </style>
 </head>
 <body>
@@ -242,7 +265,27 @@
         
         <div class="form-group">
             <label>Общая стоимость моделирования (руб.):</label>
-            <input type="number" id="total_cost" value="2500" onchange="calculatePrepayment()">
+            <input type="number" id="total_cost" value="2500" onchange="calculateCostBreakdown()">
+        </div>
+        
+        <div class="cost-breakdown">
+            <h3>Разбивка стоимости моделирования:</h3>
+            <div class="cost-item">
+                <span>Этап 1 (20%):</span>
+                <span id="stage1_cost">500 руб.</span>
+            </div>
+            <div class="cost-item">
+                <span>Этап 2 (30%):</span>
+                <span id="stage2_cost">750 руб.</span>
+            </div>
+            <div class="cost-item">
+                <span>Этап 3 (50%):</span>
+                <span id="stage3_cost">1250 руб.</span>
+            </div>
+            <div class="cost-total">
+                <span>Итого:</span>
+                <span id="total_cost_display">2500 руб.</span>
+            </div>
         </div>
         
         <div class="form-group">
@@ -278,7 +321,7 @@
             <h3>Сроки выполнения этапов (в календарных днях)</h3>
             
             <div class="form-group">
-                <label>Подготовка 3D-эскиза после предоплаты:</label>
+                <label>Подготовка 3D-эскиза после оплаты этапов 1 и 2:</label>
                 <div class="duration-select">
                     <select id="stage2_duration">
                         <option value="1">1 день</option>
@@ -300,7 +343,7 @@
             </div>
             
             <div class="form-group">
-                <label>Подготовка модели после утверждения эскиза:</label>
+                <label>Подготовка модели после утверждения эскиза и оплаты этапа 3:</label>
                 <div class="duration-select">
                     <select id="stage3_duration">
                         <option value="1">1 день</option>
@@ -337,7 +380,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Срок выполнения печати после утверждения модели и предоплаты:</label>
+                    <label>Срок выполнения печати после утверждения модели и оплаты:</label>
                     <div class="duration-select">
                         <select id="printing_duration">
                             <option value="1">1 день</option>
@@ -371,7 +414,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Срок выполнения покраски после утверждения модели и предоплаты:</label>
+                    <label>Срок выполнения покраски после утверждения модели и оплаты:</label>
                     <div class="duration-select">
                         <select id="painting_duration">
                             <option value="1">1 день</option>
@@ -473,14 +516,13 @@
 
         <div class="section">
             <div class="section-title">1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ</div>
-            <p>Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем предоплаты в течение 3 (трех) рабочих дней с момента ее получения. По истечении данного срока условия (сроки и стоимость) подлежат повторному согласованию.</p>
+            <p>Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем оплаты в соответствии с условиями, указанными ниже.</p>
             <p>Исполнитель обязуется создать 3D-модель в соответствии с Техническим заданием (ТЗ), а Заказчик — принять и оплатить работу.</p>
         </div>
 
         <div class="section">
             <div class="section-title">2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ</div>
             <p>Общая стоимость Заказа составляет: <strong><span id="totalCostDisplay"></span> рублей</strong>.</p>
-            <p>Предоплата составляет: <strong><span id="prepaymentAmount"></span> рублей (<span id="prepaymentPercent"></span>)</strong>.</p>
             
             <table class="stages-table">
                 <thead>
@@ -506,8 +548,10 @@
         <div class="section">
             <div class="section-title">3. ПОРЯДОК ОПЛАТЫ</div>
             <ol class="criteria-list">
-                <li>При общей стоимости Заказа до 10 000 ₽ — 100% предоплата.</li>
-                <li>При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3.</li>
+                <li>Этап 1: 20% от стоимости моделирования - оплата в течение 2 рабочих дней с момента отправки предложения</li>
+                <li>Этап 2: 30% от стоимости моделирования - оплачивается одновременно с Этапом 1, списывается при передаче материалов готового эскиза</li>
+                <li>Этап 3: 50% от стоимости моделирования - оплачивается в течение 2 рабочих дней с момента утверждения эскиза, списывается после утверждения готовой модели</li>
+                <li>Дополнительные услуги (печать, покраска): 100% стоимости услуги - оплачивается в течение 2 рабочих дней с момента утверждения предыдущего этапа, списывается моментально</li>
                 <li>Реквизиты для оплаты:
                     <div class="bank-details" id="bankDetailsDisplay"></div>
                 </li>
@@ -553,14 +597,17 @@
             paintingFields.style.display = document.getElementById('include_painting').checked ? 'block' : 'none';
         }
 
-        // Функция для расчета предоплаты
-        function calculatePrepayment() {
+        // Функция для расчета разбивки стоимости
+        function calculateCostBreakdown() {
             var totalCost = parseInt(document.getElementById('total_cost').value) || 0;
-            var prepaymentPercent = totalCost <= 10000 ? 100 : 50;
-            var prepaymentAmount = Math.round(totalCost * prepaymentPercent / 100);
+            var stage1Cost = Math.round(totalCost * 0.2);
+            var stage2Cost = Math.round(totalCost * 0.3);
+            var stage3Cost = totalCost - stage1Cost - stage2Cost;
             
-            // Можно показать расчет предоплаты пользователю, если нужно
-            // console.log("Предоплата: " + prepaymentAmount + " руб. (" + prepaymentPercent + "%)");
+            document.getElementById('stage1_cost').textContent = stage1Cost + ' руб.';
+            document.getElementById('stage2_cost').textContent = stage2Cost + ' руб.';
+            document.getElementById('stage3_cost').textContent = stage3Cost + ' руб.';
+            document.getElementById('total_cost_display').textContent = totalCost + ' руб.';
         }
 
         // Функция для получения названия месяца
@@ -604,12 +651,13 @@
                     painting_duration: parseInt(document.getElementById('painting_duration').value) || 5,
                     // Метаданные
                     created_at: new Date().toISOString(),
-                    version: '2.0'
+                    version: '3.0'
                 };
 
-                // Рассчитываем предоплату
-                var prepaymentPercent = data.total_cost <= 10000 ? 100 : 50;
-                var prepaymentAmount = Math.round(data.total_cost * prepaymentPercent / 100);
+                // Рассчитываем стоимость этапов
+                var stage1Cost = Math.round(data.total_cost * 0.2);
+                var stage2Cost = Math.round(data.total_cost * 0.3);
+                var stage3Cost = data.total_cost - stage1Cost - stage2Cost;
 
                 // Генерируем номер
                 data.project_number = 'ТЗ-' + new Date().getTime();
@@ -619,49 +667,81 @@
                 var stages = [
                     {
                         number: '1',
-                        name: 'Предоплата',
-                        duration: 'Моментально после получения реквизитов',
-                        cost: prepaymentAmount + ' руб. (' + prepaymentPercent + '%)',
+                        name: 'Оплата начала работ',
+                        duration: 'В течение 2 рабочих дней с момента отправки предложения',
+                        cost: stage1Cost + ' руб. (20%)',
                         condition: 'Оплата является подтверждением заказа и принятием условий оферты.'
                     },
                     {
                         number: '2',
-                        name: 'Утверждение 3D-эскиза',
-                        duration: 'В течение ' + data.stage2_duration + ' ' + getDayWord(data.stage2_duration) + ' после предоплаты, подтвержденной чеком',
-                        cost: data.total_cost <= 10000 ? 'Включено в предоплату' : Math.round(data.total_cost * 0.3) + ' руб. (30%)',
-                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой. ' + (data.total_cost > 10000 ? 'Очередной платеж подлежит уплате в течение 48 часов с момента принятия этапа.' : '')
+                        name: 'Оплата за эскиз',
+                        duration: 'Одновременно с Этапом 1',
+                        cost: stage2Cost + ' руб. (30%)',
+                        condition: 'Списывается при передаче материалов готового эскиза (фото, ссылка). Этап считается принятым с возможностью внесения правок по усмотрению Заказчика в соответствии с регламентом.'
                     },
                     {
                         number: '3',
-                        name: 'Передача файла ' + data.file_format,
-                        duration: 'В течение ' + data.stage3_duration + ' ' + getDayWord(data.stage3_duration) + ' после утверждения эскиза',
-                        cost: data.total_cost <= 10000 ? 'Включено в предоплату' : Math.round(data.total_cost * 0.5) + ' руб. (50%)',
-                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой' + (data.total_cost > 10000 ? ', Заказчик обязан произвести итоговый платеж в течение 48 часов.' : '.')
+                        name: 'Подготовка 3D-эскиза',
+                        duration: 'В течение ' + data.stage2_duration + ' ' + getDayWord(data.stage2_duration) + ' после оплаты Этапов 1 и 2',
+                        cost: 'Включено в стоимость моделирования',
+                        condition: 'Заказчик обязан в течение 48 часов с момента получения эскиза предоставить обратную связь или утвердить эскиз.'
+                    },
+                    {
+                        number: '4',
+                        name: 'Оплата за финальную модель',
+                        duration: 'В течение 2 рабочих дней с момента утверждения эскиза',
+                        cost: stage3Cost + ' руб. (50%)',
+                        condition: 'Списывается после утверждения Заказчиком готовой модели.'
+                    },
+                    {
+                        number: '5',
+                        name: 'Подготовка финальной модели',
+                        duration: 'В течение ' + data.stage3_duration + ' ' + getDayWord(data.stage3_duration) + ' после оплаты Этапа 4',
+                        cost: 'Включено в стоимость моделирования',
+                        condition: 'Заказчик обязан в течение 48 часов с момента получения финальной модели предоставить обратную связь или утвердить модель.'
                     }
                 ];
 
                 // Дополнительные этапы
                 var additionalStages = [];
                 var additionalServicesHTML = '';
+                var stageCounter = 6;
                 
                 if (data.include_printing) {
                     additionalStages.push({
-                        number: '4',
+                        number: stageCounter.toString(),
+                        name: 'Оплата за печать',
+                        duration: 'В течение 2 рабочих дней с момента утверждения модели',
+                        cost: data.printing_cost + ' руб. (100%)',
+                        condition: 'Списывается моментально в счет материалов и оплаты работы подрядчика.'
+                    });
+                    
+                    additionalStages.push({
+                        number: (stageCounter + 1).toString(),
                         name: 'Печать',
-                        duration: 'В течение ' + data.printing_duration + ' ' + getDayWord(data.printing_duration) + ' после утверждения модели и 100% предоплаты за печать',
-                        cost: data.printing_cost + ' руб. (100% предоплата)',
+                        duration: 'В течение ' + data.printing_duration + ' ' + getDayWord(data.printing_duration) + ' после оплаты',
+                        cost: 'Включено в стоимость печати',
                         condition: 'Фактом утверждения этапа является отправка фото готового изделия Исполнителем. В связи с заказом физических материалов, отказ от услуги после оплаты невозможен, возврат средств не производится.'
                     });
                     
+                    stageCounter += 2;
                     additionalServicesHTML += '<p><strong>Услуга печати:</strong> ' + data.printing_cost + ' руб. (100% предоплата)</p>';
                 }
                 
                 if (data.include_painting) {
                     additionalStages.push({
-                        number: data.include_printing ? '5' : '4',
+                        number: stageCounter.toString(),
+                        name: 'Оплата за покраску',
+                        duration: 'В течение 2 рабочих дней с момента утверждения модели',
+                        cost: data.painting_cost + ' руб. (100%)',
+                        condition: 'Списывается моментально в счет материалов и оплаты работы подрядчика.'
+                    });
+                    
+                    additionalStages.push({
+                        number: (stageCounter + 1).toString(),
                         name: 'Покраска',
-                        duration: 'В течение ' + data.painting_duration + ' ' + getDayWord(data.painting_duration) + ' после утверждения модели и 100% предоплаты за покраску',
-                        cost: data.painting_cost + ' руб. (100% предоплата)',
+                        duration: 'В течение ' + data.painting_duration + ' ' + getDayWord(data.painting_duration) + ' после оплаты',
+                        cost: 'Включено в стоимость покраски',
                         condition: 'Фактом утверждения этапа является отправка фото готового изделия Исполнителем. В связи с заказом физических материалов и привлечением сторонних исполнителей, отказ от услуги после оплаты невозможен, возврат средств не производится.'
                     });
                     
@@ -674,8 +754,6 @@
                 document.getElementById('purposeDisplay').textContent = data.purpose;
                 document.getElementById('fileFormatDisplay').textContent = data.file_format;
                 document.getElementById('totalCostDisplay').textContent = data.total_cost;
-                document.getElementById('prepaymentAmount').textContent = prepaymentAmount;
-                document.getElementById('prepaymentPercent').textContent = prepaymentPercent + '%';
                 document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
                 document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
                 document.getElementById('additionalServicesSection').innerHTML = additionalServicesHTML;
@@ -757,9 +835,10 @@
                 var stages = window.currentStages;
                 var additionalStages = window.additionalStages;
                 
-                // Рассчитываем предоплату
-                var prepaymentPercent = data.total_cost <= 10000 ? 100 : 50;
-                var prepaymentAmount = Math.round(data.total_cost * prepaymentPercent / 100);
+                // Рассчитываем стоимость этапов
+                var stage1Cost = Math.round(data.total_cost * 0.2);
+                var stage2Cost = Math.round(data.total_cost * 0.3);
+                var stage3Cost = data.total_cost - stage1Cost - stage2Cost;
                 
                 var text = 'ТЕХНИЧЕСКОЕ ЗАДАНИЕ (ТЗ)\n';
                 text += 'к Договору на создание 3D-модели\n\n';
@@ -798,12 +877,10 @@
                 text += 'г. Москва «' + new Date().getDate() + '» ' + getMonthName(new Date().getMonth()) + ' ' + new Date().getFullYear() + ' г.\n\n';
                 
                 text += '1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ\n';
-                text += 'Исполнитель: Константин Сергеевич С. предлагает заключить настоящий Договор.\n';
-                text += 'Акцепт оферты осуществляется путем предоплаты в течение 3 рабочих дней.\n\n';
+                text += 'Исполнитель: Константин Сергеевич С. предлагает заключить настоящий Договор.\n\n';
                 
                 text += '2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ\n';
-                text += 'Общая стоимость Заказа составляет: ' + data.total_cost + ' рублей.\n';
-                text += 'Предоплата составляет: ' + prepaymentAmount + ' рублей (' + prepaymentPercent + '%).\n\n';
+                text += 'Общая стоимость Заказа составляет: ' + data.total_cost + ' рублей.\n\n';
                 
                 text += 'Этапы работы:\n';
                 for (var i = 0; i < stages.length; i++) {
@@ -824,10 +901,12 @@
                 text += 'Правки к принятым этапам оплачиваются дополнительно: ' + data.corrections_cost + ' руб./подход\n\n';
                 
                 text += '3. ПОРЯДОК ОПЛАТЫ\n';
-                text += '1. При стоимости до 10 000 ₽ — 100% предоплата\n';
-                text += '2. При стоимости свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3\n';
-                text += '3. Реквизиты для оплаты: ' + data.bank_details + '\n';
-                text += '4. Подтверждением оплаты является чек\n\n';
+                text += '1. Этап 1: 20% (' + stage1Cost + ' руб.) - оплата в течение 2 рабочих дней с момента отправки предложения\n';
+                text += '2. Этап 2: 30% (' + stage2Cost + ' руб.) - оплачивается одновременно с Этапом 1, списывается при передаче эскиза\n';
+                text += '3. Этап 3: 50% (' + stage3Cost + ' руб.) - оплачивается в течение 2 рабочих дней с момента утверждения эскиза\n';
+                text += '4. Дополнительные услуги: 100% стоимости - оплачивается в течение 2 рабочих дней с момента утверждения модели\n';
+                text += '5. Реквизиты для оплаты: ' + data.bank_details + '\n';
+                text += '6. Подтверждением оплаты является чек\n\n';
                 
                 text += '4. ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ\n';
                 text += 'Услуги печати и покраски являются отдельными с 100% предоплатой.\n';
@@ -886,6 +965,9 @@
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
+            // Рассчитываем первоначальную разбивку стоимости
+            calculateCostBreakdown();
+            
             // Показываем форму
             showForm();
         });
