@@ -209,30 +209,6 @@
             margin-top: 10px;
         }
         
-        .link-section {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #007cba;
-        }
-        
-        .link-box {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 10px 0;
-            word-break: break-all;
-            font-size: 14px;
-            border: 1px solid #007cba;
-        }
-        
-        .expiry-info {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
         .contract-date {
             text-align: center;
             margin: 20px 0;
@@ -242,6 +218,15 @@
         .contract-closing {
             margin-top: 30px;
             text-align: right;
+        }
+        
+        .prepayment-info {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-left: 4px solid #007cba;
         }
     </style>
 </head>
@@ -256,7 +241,10 @@
         
         <div class="form-group">
             <label>Общая стоимость моделирования (руб.):</label>
-            <input type="number" id="total_cost" value="2500">
+            <input type="number" id="total_cost" value="2500" onchange="updatePrepaymentInfo()">
+            <div class="prepayment-info" id="prepaymentInfo">
+                Предоплата: 100% (2500 руб.)
+            </div>
         </div>
         
         <div class="form-group">
@@ -423,13 +411,17 @@
 
         <div class="section">
             <div class="section-title">1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ</div>
-            <p>Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем 100% предоплаты в течение 3 (трех) рабочих дней с момента ее получения. По истечении данного срока условия (сроки и стоимость) подлежат повторному согласованию.</p>
+            <p>Исполнитель: Константин Сергеевич С., предлагает заключить настоящий Договор любому физическому или юридическому лицу (далее — Заказчик) на следующих условиях. Акцепт оферты (подтверждение заказа) осуществляется путем предоплаты в течение 3 (трех) рабочих дней с момента ее получения. По истечении данного срока условия (сроки и стоимость) подлежат повторному согласованию.</p>
             <p>Исполнитель обязуется создать 3D-модель в соответствии с Техническим заданием (ТЗ), а Заказчик — принять и оплатить работу.</p>
         </div>
 
         <div class="section">
             <div class="section-title">2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ</div>
             <p>Общая стоимость Заказа составляет: <strong><span id="totalCostDisplay"></span> рублей</strong>.</p>
+            
+            <div class="prepayment-info" id="prepaymentDisplay">
+                <!-- Автоматически заполняется информацией о предоплате -->
+            </div>
             
             <table class="stages-table">
                 <thead>
@@ -454,13 +446,8 @@
 
         <div class="section">
             <div class="section-title">3. ПОРЯДОК ОПЛАТЫ</div>
-            <ol class="criteria-list">
-                <li>При общей стоимости Заказа до 10 000 ₽ — 100% предоплата.</li>
-                <li>При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3.</li>
-                <li>Реквизиты для оплаты:
-                    <div class="bank-details" id="bankDetailsDisplay"></div>
-                </li>
-                <li>Подтверждением оплаты является чек.</li>
+            <ol class="criteria-list" id="paymentTerms">
+                <!-- Автоматически заполняется условиями оплаты -->
             </ol>
         </div>
 
@@ -484,17 +471,9 @@
             Константин Сергеевич С.</p>
         </div>
 
-        <div class="link-section">
-            <div class="section-title">Ссылка для передачи оферты</div>
-            <p>Отправьте эту ссылку клиенту. Ссылка будет активна в течение 30 дней.</p>
-            <div class="link-box" id="offerLink"></div>
-            <div class="expiry-info" id="expiryInfo"></div>
-            <button onclick="copyOfferLink()">Скопировать ссылку</button>
-        </div>
-
         <button class="btn-success" onclick="window.print()">Распечатать ТЗ</button>
-        <button class="btn-secondary" onclick="showForm()">Создать новое ТЗ</button>
         <button onclick="shareAsText()">Поделиться как текст</button>
+        <button class="btn-secondary" onclick="location.reload()">Новое ТЗ</button>
         
         <div class="message" id="message"></div>
     </div>
@@ -511,27 +490,17 @@
             paintingFields.style.display = document.getElementById('include_painting').checked ? 'block' : 'none';
         }
 
-        // Функция для кодирования данных в base64
-        function encodeData(data) {
-            return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        }
-
-        // Функция для декодирования данных из base64
-        function decodeData(encoded) {
-            return JSON.parse(decodeURIComponent(escape(atob(encoded))));
-        }
-
-        // Функция для проверки срока действия ссылки
-        function isLinkExpired(createdAt) {
-            var created = new Date(createdAt);
-            var now = new Date();
-            var diffDays = Math.floor((now - created) / (1000 * 60 * 60 * 24));
-            return diffDays > 30; // Ссылка действительна 30 дней
-        }
-
-        // Функция для форматирования даты
-        function formatDate(date) {
-            return date.toLocaleDateString('ru-RU');
+        // Функция для обновления информации о предоплате
+        function updatePrepaymentInfo() {
+            var totalCost = parseInt(document.getElementById('total_cost').value) || 2500;
+            var prepaymentInfo = document.getElementById('prepaymentInfo');
+            
+            if (totalCost <= 10000) {
+                prepaymentInfo.textContent = 'Предоплата: 100% (' + totalCost + ' руб.)';
+            } else {
+                var prepaymentAmount = Math.round(totalCost * 0.5);
+                prepaymentInfo.textContent = 'Предоплата: 50% (' + prepaymentAmount + ' руб.), остальные 50% после завершения Этапа 3';
+            }
         }
 
         // Функция для получения названия месяца
@@ -576,30 +545,86 @@
                 data.project_number = 'ТЗ-' + new Date().getTime();
                 data.created_at_display = new Date().toLocaleString('ru-RU');
 
-                // Рассчитываем основные этапы
-                var stages = [
-                    {
-                        number: '1',
-                        name: 'Утверждение ТЗ',
-                        date: data.stage1_date,
-                        cost: Math.round(data.total_cost * 0.2) + ' руб. (20%)',
-                        condition: 'Внесение предоплаты.'
-                    },
-                    {
-                        number: '2',
-                        name: 'Утверждение 3D-эскиза',
-                        date: data.stage2_date,
-                        cost: Math.round(data.total_cost * 0.3) + ' руб. (30%)',
-                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой. Очередной платеж подлежит уплате в течение 48 часов с момента принятия этапа.'
-                    },
-                    {
-                        number: '3',
-                        name: 'Передача файла ' + data.file_format,
-                        date: data.stage3_date,
-                        cost: Math.round(data.total_cost * 0.5) + ' руб. (50%)',
-                        condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой, Заказчик обязан произвести итоговый платеж (если применимо) в течение 48 часов.'
-                    }
-                ];
+                // Рассчитываем условия оплаты в зависимости от суммы
+                var paymentTerms = document.getElementById('paymentTerms');
+                var prepaymentDisplay = document.getElementById('prepaymentDisplay');
+                var stages;
+                
+                if (data.total_cost <= 10000) {
+                    // Для заказов до 10 000 руб. - 100% предоплата
+                    stages = [
+                        {
+                            number: '1',
+                            name: 'Утверждение ТЗ',
+                            date: data.stage1_date,
+                            cost: data.total_cost + ' руб. (100%)',
+                            condition: 'Внесение предоплаты.'
+                        },
+                        {
+                            number: '2',
+                            name: 'Утверждение 3D-эскиза',
+                            date: data.stage2_date,
+                            cost: '-',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой.'
+                        },
+                        {
+                            number: '3',
+                            name: 'Передача файла ' + data.file_format,
+                            date: data.stage3_date,
+                            cost: '-',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой.'
+                        }
+                    ];
+                    
+                    paymentTerms.innerHTML = `
+                        <li>При общей стоимости Заказа до 10 000 ₽ — 100% предоплата</li>
+                        <li>Реквизиты для оплаты:
+                            <div class="bank-details">${data.bank_details}</div>
+                        </li>
+                        <li>Подтверждением оплаты является чек.</li>
+                    `;
+                    
+                    prepaymentDisplay.innerHTML = `Условия оплаты: 100% предоплата (${data.total_cost} руб.)`;
+                    
+                } else {
+                    // Для заказов свыше 10 000 руб. - 50% предоплата, 50% после этапа 3
+                    var prepaymentAmount = Math.round(data.total_cost * 0.5);
+                    var finalPaymentAmount = data.total_cost - prepaymentAmount;
+                    
+                    stages = [
+                        {
+                            number: '1',
+                            name: 'Утверждение ТЗ',
+                            date: data.stage1_date,
+                            cost: prepaymentAmount + ' руб. (50%)',
+                            condition: 'Внесение предоплаты.'
+                        },
+                        {
+                            number: '2',
+                            name: 'Утверждение 3D-эскиза',
+                            date: data.stage2_date,
+                            cost: '-',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой.'
+                        },
+                        {
+                            number: '3',
+                            name: 'Передача файла ' + data.file_format,
+                            date: data.stage3_date,
+                            cost: finalPaymentAmount + ' руб. (50%)',
+                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой, Заказчик обязан произвести итоговый платеж в течение 48 часов.'
+                        }
+                    ];
+                    
+                    paymentTerms.innerHTML = `
+                        <li>При общей стоимости Заказа свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3</li>
+                        <li>Реквизиты для оплаты:
+                            <div class="bank-details">${data.bank_details}</div>
+                        </li>
+                        <li>Подтверждением оплаты является чек.</li>
+                    `;
+                    
+                    prepaymentDisplay.innerHTML = `Условия оплаты: 50% предоплата (${prepaymentAmount} руб.), 50% после завершения Этапа 3 (${finalPaymentAmount} руб.)`;
+                }
 
                 // Дополнительные этапы
                 var additionalStages = [];
@@ -636,7 +661,6 @@
                 document.getElementById('fileFormatDisplay').textContent = data.file_format;
                 document.getElementById('totalCostDisplay').textContent = data.total_cost;
                 document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
-                document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
                 document.getElementById('additionalServicesSection').innerHTML = additionalServicesHTML;
 
                 // Устанавливаем дату договора
@@ -668,24 +692,10 @@
                     additionalTable.innerHTML = additionalHTML;
                 }
 
-                // Генерируем уникальную ссылку
-                var encodedData = encodeData(data);
-                var currentUrl = window.location.href.split('?')[0]; // Берем базовый URL без параметров
-                var offerLink = currentUrl + '?offer=' + encodedData;
-                
-                // Показываем ссылку
-                document.getElementById('offerLink').textContent = offerLink;
-                
-                // Показываем информацию о сроке действия
-                var expiryDate = new Date(data.created_at);
-                expiryDate.setDate(expiryDate.getDate() + 30);
-                document.getElementById('expiryInfo').textContent = 'Ссылка действительна до: ' + formatDate(expiryDate);
-
                 // Сохраняем данные
                 window.currentOfferData = data;
                 window.currentStages = stages;
                 window.additionalStages = additionalStages;
-                window.currentOfferLink = offerLink;
 
                 // Показываем результат
                 showOffer();
@@ -696,135 +706,10 @@
             }
         }
 
-        // Функция для копирования ссылки
-        function copyOfferLink() {
-            if (window.currentOfferLink) {
-                navigator.clipboard.writeText(window.currentOfferLink).then(function() {
-                    showMessage('Ссылка скопирована в буфер обмена!');
-                }).catch(function() {
-                    showTextForCopy(window.currentOfferLink);
-                });
-            }
-        }
-
-        // Функция для загрузки оферты из URL параметров
-        function loadOfferFromURL() {
-            var urlParams = new URLSearchParams(window.location.search);
-            var offerParam = urlParams.get('offer');
-            
-            if (offerParam) {
-                try {
-                    var data = decodeData(offerParam);
-                    
-                    // Проверяем срок действия
-                    if (isLinkExpired(data.created_at)) {
-                        showMessage('Ссылка устарела! Создайте новую ТЗ-оферту.', true);
-                        return;
-                    }
-                    
-                    // Заполняем оферту данными из URL
-                    document.getElementById('projectNumber').textContent = 'Техническое задание № ' + data.project_number;
-                    document.getElementById('projectNameDisplay').textContent = 'Проект: ' + data.project_name;
-                    document.getElementById('purposeDisplay').textContent = data.purpose;
-                    document.getElementById('fileFormatDisplay').textContent = data.file_format;
-                    document.getElementById('totalCostDisplay').textContent = data.total_cost;
-                    document.getElementById('correctionsCostDisplay').textContent = data.corrections_cost;
-                    document.getElementById('bankDetailsDisplay').textContent = data.bank_details;
-
-                    // Рассчитываем этапы
-                    var stages = [
-                        {
-                            number: '1',
-                            name: 'Утверждение ТЗ',
-                            date: data.stage1_date,
-                            cost: Math.round(data.total_cost * 0.2) + ' руб. (20%)',
-                            condition: 'Внесение предоплаты.'
-                        },
-                        {
-                            number: '2',
-                            name: 'Утверждение 3D-эскиза',
-                            date: data.stage2_date,
-                            cost: Math.round(data.total_cost * 0.3) + ' руб. (30%)',
-                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки результатов этапа, работа считается принятой. Очередной платеж подлежит уплате в течение 48 часов с момента принятия этапа.'
-                        },
-                        {
-                            number: '3',
-                            name: 'Передача файла ' + data.file_format,
-                            date: data.stage3_date,
-                            cost: Math.round(data.total_cost * 0.5) + ' руб. (50%)',
-                            condition: 'При отсутствии обоснованных замечаний по критериям, указанным в ТЗ, в течение 48 часов с момента отправки финальных скриншотов, работа считается принятой, Заказчик обязан произвести итоговый платеж (если применимо) в течение 48 часов.'
-                        }
-                    ];
-
-                    // Заполняем таблицу основных этапов
-                    var tableBody = document.getElementById('stagesTableBody');
-                    tableBody.innerHTML = '';
-                    for (var i = 0; i < stages.length; i++) {
-                        var stage = stages[i];
-                        var row = '<tr><td>' + stage.number + '</td><td>' + stage.name + '</td><td>' + stage.date + '</td><td>' + stage.cost + '</td><td>' + stage.condition + '</td></tr>';
-                        tableBody.innerHTML += row;
-                    }
-
-                    // Дополнительные этапы
-                    var additionalTable = document.getElementById('additionalStagesTable');
-                    additionalTable.innerHTML = '';
-                    var additionalServicesHTML = '';
-                    
-                    if (data.include_printing) {
-                        var printingHTML = '<p><strong>Дополнительные услуги:</strong></p><table class="stages-table"><tbody>';
-                        printingHTML += '<tr><td>4</td><td>Печать</td><td>' + data.printing_date + '</td><td>' + data.printing_cost + ' руб.</td><td>100% предоплата. В связи с заказом физических материалов, отказ от услуги после оплаты невозможен, возврат средств не производится.</td></tr>';
-                        printingHTML += '</tbody></table>';
-                        additionalTable.innerHTML += printingHTML;
-                        
-                        additionalServicesHTML += '<p><strong>Услуга печати:</strong> ' + data.printing_cost + ' руб. (100% предоплата)</p>';
-                    }
-                    
-                    if (data.include_painting) {
-                        var paintingHTML = '<p><strong>Дополнительные услуги:</strong></p><table class="stages-table"><tbody>';
-                        paintingHTML += '<tr><td>' + (data.include_printing ? '5' : '4') + '</td><td>Покраска</td><td>' + data.painting_date + '</td><td>' + data.painting_cost + ' руб.</td><td>100% предоплата. В связи с заказом физических материалов и привлечением сторонних исполнителей, отказ от услуги после оплаты невозможен, возврат средств не производится.</td></tr>';
-                        paintingHTML += '</tbody></table>';
-                        additionalTable.innerHTML += paintingHTML;
-                        
-                        additionalServicesHTML += '<p><strong>Услуга покраски:</strong> ' + data.painting_cost + ' руб. (100% предоплата)</p>';
-                    }
-                    
-                    document.getElementById('additionalServicesSection').innerHTML = additionalServicesHTML;
-
-                    // Устанавливаем дату договора
-                    var createdDate = new Date(data.created_at);
-                    document.getElementById('contractDay').textContent = createdDate.getDate();
-                    document.getElementById('contractMonth').textContent = getMonthName(createdDate.getMonth());
-                    document.getElementById('contractYear').textContent = createdDate.getFullYear();
-
-                    // Скрываем секцию с ссылкой при просмотре по ссылке
-                    document.querySelector('.link-section').style.display = 'none';
-                    
-                    // Показываем оферту
-                    showOffer();
-                    
-                } catch (error) {
-                    console.error('Ошибка загрузки оферты:', error);
-                    showMessage('Не удалось загрузить оферту по ссылке', true);
-                }
-            }
-        }
-
         function showOffer() {
             document.getElementById('formView').style.display = 'none';
             document.getElementById('offerView').style.display = 'block';
             window.scrollTo(0, 0);
-        }
-
-        function showForm() {
-            document.getElementById('offerView').style.display = 'none';
-            document.getElementById('formView').style.display = 'block';
-            window.scrollTo(0, 0);
-            
-            // Очищаем параметры URL
-            if (window.history.replaceState) {
-                var newUrl = window.location.origin + window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-            }
         }
 
         function showMessage(text, isError) {
@@ -886,10 +771,19 @@
                 
                 text += '1. ПРЕДМЕТ ДОГОВОРА И ЭТАПЫ РАБОТЫ\n';
                 text += 'Исполнитель: Константин Сергеевич С. предлагает заключить настоящий Договор.\n';
-                text += 'Акцепт оферты осуществляется путем 100% предоплаты в течение 3 рабочих дней.\n\n';
+                text += 'Акцепт оферты осуществляется путем предоплаты в течение 3 рабочих дней.\n\n';
                 
                 text += '2. СТОИМОСТЬ, СРОКИ И ПОРЯДОК РАБОТ\n';
                 text += 'Общая стоимость Заказа составляет: ' + data.total_cost + ' рублей.\n\n';
+                
+                // Добавляем информацию о предоплате
+                if (data.total_cost <= 10000) {
+                    text += 'Условия оплаты: 100% предоплата (' + data.total_cost + ' руб.)\n\n';
+                } else {
+                    var prepaymentAmount = Math.round(data.total_cost * 0.5);
+                    var finalPaymentAmount = data.total_cost - prepaymentAmount;
+                    text += 'Условия оплаты: 50% предоплата (' + prepaymentAmount + ' руб.), 50% после завершения Этапа 3 (' + finalPaymentAmount + ' руб.)\n\n';
+                }
                 
                 text += 'Этапы работы:\n';
                 for (var i = 0; i < stages.length; i++) {
@@ -910,10 +804,13 @@
                 text += 'Правки к принятым этапам оплачиваются дополнительно: ' + data.corrections_cost + ' руб./подход\n\n';
                 
                 text += '3. ПОРЯДОК ОПЛАТЫ\n';
-                text += '1. При стоимости до 10 000 ₽ — 100% предоплата\n';
-                text += '2. При стоимости свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3\n';
-                text += '3. Реквизиты для оплаты: ' + data.bank_details + '\n';
-                text += '4. Подтверждением оплаты является чек\n\n';
+                if (data.total_cost <= 10000) {
+                    text += '1. При стоимости до 10 000 ₽ — 100% предоплата\n';
+                } else {
+                    text += '1. При стоимости свыше 10 000 ₽ — 50% предоплата, 50% после завершения Этапа 3\n';
+                }
+                text += '2. Реквизиты для оплаты: ' + data.bank_details + '\n';
+                text += '3. Подтверждением оплаты является чек\n\n';
                 
                 text += '4. ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ\n';
                 text += 'Услуги печати и покраски являются отдельными с 100% предоплатой.\n';
@@ -972,13 +869,8 @@
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Пытаемся загрузить оферту из URL параметров
-            loadOfferFromURL();
-            
-            // Если оферта не загружена из URL, показываем форму
-            if (document.getElementById('formView').style.display !== 'none') {
-                showForm();
-            }
+            // Обновляем информацию о предоплате при загрузке
+            updatePrepaymentInfo();
         });
     </script>
 </body>
